@@ -38,6 +38,49 @@ export const VARIABLES = [
     unit: 'EUR', decimals: 0, colorScale: 'sequential', category: 'Income',
   },
 
+  {
+    id:       'gini',
+    label_en: 'Gini index (inequality)',
+    label_es: 'Índice de Gini',
+    label_ca: 'Índex de Gini',
+    unit:     'PCT',
+    decimals: 1,
+    colorScale: 'diverging',
+    category: 'Income',
+  },
+
+  {
+    id:       'p80_p20',
+    label_en: 'P80/P20 income ratio',
+    label_es: 'Distribución de la renta P80/P20',
+    label_ca: 'Distribució de la renda P80/P20',
+    unit:     '',
+    decimals: 2,
+    colorScale: 'diverging',
+    category: 'Income',
+  },
+
+    {
+    id:       'poverty_60_median_pct',
+    label_en: 'Population below 60% median income',
+    label_es: 'Población con ingresos por debajo 60% de la mediana',
+    label_ca: 'Població amb ingressos per sota 60% de la mediana',
+    unit:     'PCT',
+    decimals: 1,
+    colorScale: 'sequentialAlert',
+    category: 'Income',
+  },
+  {
+    id:       'poverty_10k_pct',
+    label_en: 'Population with income below €10,000',
+    label_es: 'Población con ingresos por debajo de 10.000€',
+    label_ca: 'Població amb ingressos per sota 10.000€',
+    unit:     'PCT',
+    decimals: 1,
+    colorScale: 'sequentialAlert',
+    category: 'Income',
+  },
+
   // ── Employment — activity ─────────────────────────────────────────────────
   {
     id: 'employment_rate', label_en: 'Employment rate',

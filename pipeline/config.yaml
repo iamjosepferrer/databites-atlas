@@ -269,3 +269,68 @@ sources:
         label_en: Employed (salaried)
         unit: "%"
         decimals: 1
+
+  # ── Gini index (ADRH — one file per Catalan province) ────────────────────
+  ine_gini:
+    urls:
+      - "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/37686.csv"  # 08 Barcelona
+      - "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/37697.csv"  # 17 Girona
+      - "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/37704.csv"  # 25 Lleida
+      - "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/37718.csv"  # 43 Tarragona
+    type: ine_atlas_renta
+    label: "INE — Atlas de Distribución de Renta de los Hogares (Gini)"
+    variables:
+      - id: gini
+        indicator: "Índice de Gini"
+        label_es: Índice de Gini
+        label_ca: Índex de Gini
+        label_en: Gini index (inequality)
+        unit: "%"
+        decimals: 1
+        multiplier: 1
+      
+      - id: p80_p20
+        indicator: "Distribución de la renta P80/P20"
+        label_es: Distribución de la renta P80/P20
+        label_ca: Distribució de la renda P80/P20
+        label_en: P80/P20 income ratio
+        unit: ""
+        decimals: 2
+        multiplier: 1
+
+  # ── Income distribution — poverty (ADRH, one file per province, 7-col format) ─
+  ine_poverty_euros:
+    urls:
+      - "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/30898.csv"  # 08 Barcelona
+      - "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/31018.csv"  # 17 Girona
+      - "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/31081.csv"  # 25 Lleida
+      - "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/31225.csv"  # 43 Tarragona
+    type: ine_censo_anual
+    label: "INE — Atlas de Distribución de Renta de los Hogares (distribución por euros)"
+    variables:
+      - id: poverty_10k_pct
+        indicator: "Población con ingresos por unidad de consumo por debajo de 10.000 Euros"
+        label_es: Población con ingresos por debajo de 10.000€
+        label_ca: Població amb ingressos per sota 10.000€
+        label_en: Population with income below €10,000
+        unit: "%"
+        decimals: 1
+        multiplier: 1
+ 
+  ine_poverty_median:
+    urls:
+      - "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/30901.csv"  # 08 Barcelona
+      - "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/31021.csv"  # 17 Girona
+      - "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/31084.csv"  # 25 Lleida
+      - "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/31228.csv"  # 43 Tarragona
+    type: ine_censo_anual
+    label: "INE — Atlas de Distribución de Renta de los Hogares (distribución por mediana)"
+    variables:
+      - id: poverty_60_median_pct
+        indicator: "Población con ingresos por unidad de consumo por debajo 60% de la mediana"
+        label_es: Población con ingresos por debajo 60% de la mediana
+        label_ca: Població amb ingressos per sota 60% de la mediana
+        label_en: Population below 60% median income
+        unit: "%"
+        decimals: 1
+        multiplier: 1

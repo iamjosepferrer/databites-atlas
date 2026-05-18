@@ -90,9 +90,48 @@ def parse_ine_censo_anual(raw: bytes, province_codes: list) -> pd.DataFrame:
 
 # ── Dispatcher ────────────────────────────────────────────────────────────
 
+def parse_ine_atlas_renta_2dim(raw: bytes, province_codes: list) -> pd.DataFrame:
+    """
+    Parse INE Atlas de Renta CSV with Sexo + Nacionalidad breakdown.
+    Format: Municipios;Distritos;Secciones;Sexo;Nacionalidad;indicator;Periodo;Total
+
+    Keeps Sexo == Total and Nacionalidad == Española only.
+    (Phase B: weight with Padrón population for true total)
+    """
+    df = pd.read_csv(
+        io.BytesIO(raw),
+        sep=";",
+        encoding="utf-8-sig",
+        dtype=str
+    )
+
+    df.columns = ["municipio", "distrito", "seccion", "dim1", "dim2", "indicator", "year", "value"]
+
+    # Keep Sexo == Total, Nacionalidad == Española
+    df = df[
+        (df["dim1"].str.strip() == "Total") &
+        (df["dim2"].str.strip() == "Española")
+    ].copy()
+
+    df["CUSEC"] = df["seccion"].str.extract(r"^(\d{10})")
+    df = df[df["CUSEC"].notna()].copy()
+    df = df[df["CUSEC"].str[:2].isin(province_codes)].copy()
+
+    df["year"] = pd.to_numeric(df["year"], errors="coerce").astype("Int64")
+
+    df["value"] = df["value"].replace(".", None)
+    df["value"] = df["value"].str.replace(",", ".", regex=False)
+    df["value"] = pd.to_numeric(df["value"], errors="coerce")
+
+    df = df[["CUSEC", "indicator", "year", "value"]].reset_index(drop=True)
+    print(f"    [parsed] {len(df):,} rows for region tracts")
+    return df
+
+
 PARSERS = {
-    "ine_atlas_renta": parse_ine_atlas_renta,
-    "ine_censo_anual": parse_ine_censo_anual,
+    "ine_atlas_renta":      parse_ine_atlas_renta,
+    "ine_atlas_renta_2dim": parse_ine_atlas_renta_2dim,
+    "ine_censo_anual":      parse_ine_censo_anual,
 }
 
 
