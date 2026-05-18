@@ -334,3 +334,160 @@ sources:
         unit: "%"
         decimals: 1
         multiplier: 1
+  # ── Population — birth country (Padrón Municipal, one file per province) ──
+  ine_padron_nacimiento:
+    urls:
+      - "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/66386.csv"  # 08 Barcelona
+      - "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/66410.csv"  # 17 Girona
+      - "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/66424.csv"  # 25 Lleida
+      - "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/66456.csv"  # 43 Tarragona
+    type: ine_censo_anual
+    label: "INE — Padrón Municipal (país de nacimiento)"
+    variables:
+      - id: pop_total
+        indicator: "Total"
+        label_es: Población total
+        label_ca: Població total
+        label_en: Total population
+        unit: ""
+        decimals: 0
+        multiplier: 1
+      - id: foreign_born_pct
+        ratio_complement_numerator: "España"
+        ratio_denominator: "Total"
+        label_es: Población nacida en el extranjero
+        label_ca: Població nascuda a l'estranger
+        label_en: Foreign-born population
+        unit: "%"
+        decimals: 1
+      - id: foreign_americas_pct
+        ratio_numerator: "Otros países de América"
+        ratio_denominator: "Total"
+        label_es: Nacidos en América
+        label_ca: Nascuts a Amèrica
+        label_en: Born in the Americas
+        unit: "%"
+        decimals: 1
+      - id: foreign_africa_pct
+        ratio_numerator: "Otros países de África"
+        ratio_denominator: "Total"
+        label_es: Nacidos en África
+        label_ca: Nascuts a l'Àfrica
+        label_en: Born in Africa
+        unit: "%"
+        decimals: 1
+      - id: foreign_asia_pct
+        ratio_numerator: "Otros países de Asia"
+        ratio_denominator: "Total"
+        label_es: Nacidos en Asia
+        label_ca: Nascuts a Àsia
+        label_en: Born in Asia
+        unit: "%"
+        decimals: 1
+      - id: foreign_europe_pct
+        ratio_numerator: "Otros países de Europa"
+        ratio_denominator: "Total"
+        label_es: Nacidos en Europa (excl. España)
+        label_ca: Nascuts a Europa (excl. Espanya)
+        label_en: Born in Europe (excl. Spain)
+        unit: "%"
+        decimals: 1
+
+  # ── Population — gender (% males) ────────────────────────────────────────
+  ine_padron_gender:
+    urls:
+      - "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/66386.csv"  # 08 Barcelona
+      - "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/66410.csv"  # 17 Girona
+      - "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/66424.csv"  # 25 Lleida
+      - "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/66456.csv"  # 43 Tarragona
+    type: ine_padron_gender
+    label: "INE — Padrón Municipal (distribución por sexo)"
+    variables:
+      - id: gender_ratio
+        ratio_numerator: "hombres"
+        ratio_denominator: "Total"
+        label_es: Porcentaje de hombres
+        label_ca: Percentatge d'homes
+        label_en: Male population (%)
+        unit: "%"
+        decimals: 1
+
+  # ── Population — age groups (Padrón Municipal, one file per province) ──────
+  ine_padron_edad:
+    urls:
+      - "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/69129.csv"  # 08 Barcelona
+      - "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/69177.csv"  # 17 Girona
+      - "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/69205.csv"  # 25 Lleida
+      - "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/69269.csv"  # 43 Tarragona
+    type: ine_censo_anual
+    label: "INE — Padrón Municipal (grupos de edad)"
+    variables:
+      - id: pop_under15_pct
+        ratio_sum_numerators:
+          - "De 0 a 4 años"
+          - "De 5 a 9 años"
+          - "De 10 a 14 años"
+        ratio_denominator: "Todas las edades"
+        label_es: Población menor de 15 años
+        label_ca: Població menor de 15 anys
+        label_en: Population under 15
+        unit: "%"
+        decimals: 1
+      - id: pop_15_64_pct
+        ratio_sum_numerators:
+          - "De 15 a 19 años"
+          - "De 20 a 24 años"
+          - "De 25 a 29 años"
+          - "De 30 a 34 años"
+          - "De 35 a 39 años"
+          - "De 40 a 44 años"
+          - "De 45 a 49 años"
+          - "De 50 a 54 años"
+          - "De 55 a 59 años"
+          - "De 60 a 64 años"
+        ratio_denominator: "Todas las edades"
+        label_es: Población de 15 a 64 años
+        label_ca: Població de 15 a 64 anys
+        label_en: Population aged 15–64
+        unit: "%"
+        decimals: 1
+      - id: pop_65plus_pct
+        ratio_sum_numerators:
+          - "De 65 a 69 años"
+          - "De 70 a 74 años"
+          - "De 75 a 79 años"
+          - "De 80 a 84 años"
+          - "De 85 a 89 años"
+          - "De 90 a 94 años"
+          - "De 95 a 99 años"
+          - "100 y más años"
+        ratio_denominator: "Todas las edades"
+        label_es: Población de 65 años o más
+        label_ca: Població de 65 anys o més
+        label_en: Population aged 65+
+        unit: "%"
+        decimals: 1
+    pyramid_bands:
+      denominator: "Todas las edades"
+      bands:
+        - { id: age_0_4,   indicator: "De 0 a 4 años"   }
+        - { id: age_5_9,   indicator: "De 5 a 9 años"   }
+        - { id: age_10_14, indicator: "De 10 a 14 años" }
+        - { id: age_15_19, indicator: "De 15 a 19 años" }
+        - { id: age_20_24, indicator: "De 20 a 24 años" }
+        - { id: age_25_29, indicator: "De 25 a 29 años" }
+        - { id: age_30_34, indicator: "De 30 a 34 años" }
+        - { id: age_35_39, indicator: "De 35 a 39 años" }
+        - { id: age_40_44, indicator: "De 40 a 44 años" }
+        - { id: age_45_49, indicator: "De 45 a 49 años" }
+        - { id: age_50_54, indicator: "De 50 a 54 años" }
+        - { id: age_55_59, indicator: "De 55 a 59 años" }
+        - { id: age_60_64, indicator: "De 60 a 64 años" }
+        - { id: age_65_69, indicator: "De 65 a 69 años" }
+        - { id: age_70_74, indicator: "De 70 a 74 años" }
+        - { id: age_75_79, indicator: "De 75 a 79 años" }
+        - { id: age_80_84, indicator: "De 80 a 84 años" }
+        - { id: age_85_89, indicator: "De 85 a 89 años" }
+        - { id: age_90_94, indicator: "De 90 a 94 años" }
+        - { id: age_95_99, indicator: "De 95 a 99 años" }
+        - { id: age_100p,  indicator: "100 y más años"  }

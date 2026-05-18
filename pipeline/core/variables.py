@@ -128,10 +128,40 @@ def parse_ine_atlas_renta_2dim(raw: bytes, province_codes: list) -> pd.DataFrame
     return df
 
 
+def parse_ine_padron_gender(raw: bytes, province_codes: list) -> pd.DataFrame:
+    """
+    Parse Padrón Municipal table keeping Hombres + Total rows for % male computation.
+    Renames: Sexo=Hombres → indicator="hombres", Sexo=Total → indicator="Total"
+    """
+    df = pd.read_csv(io.BytesIO(raw), sep=";", encoding="utf-8-sig", dtype=str)
+    df.columns = ["provincia", "municipio", "seccion", "sexo", "indicator", "year", "value"]
+
+    df = df[
+        (df["indicator"].str.strip() == "Total") &
+        (df["sexo"].str.strip().isin(["Hombres", "Total"]))
+    ].copy()
+
+    df["CUSEC"] = df["seccion"].str.extract(r"^(\d{10})")
+    df = df[df["CUSEC"].notna()].copy()
+    df = df[df["CUSEC"].str[:2].isin(province_codes)].copy()
+
+    df["indicator"] = df["sexo"].str.strip().apply(
+        lambda s: "hombres" if s == "Hombres" else "Total"
+    )
+    df["year"]  = pd.to_numeric(df["year"], errors="coerce").astype("Int64")
+    df["value"] = df["value"].apply(_clean_censo_value)
+    df["value"] = pd.to_numeric(df["value"], errors="coerce")
+
+    df = df[["CUSEC", "indicator", "year", "value"]].reset_index(drop=True)
+    print(f"    [parsed] {len(df):,} rows for region tracts")
+    return df
+
+
 PARSERS = {
     "ine_atlas_renta":      parse_ine_atlas_renta,
     "ine_atlas_renta_2dim": parse_ine_atlas_renta_2dim,
     "ine_censo_anual":      parse_ine_censo_anual,
+    "ine_padron_gender":    parse_ine_padron_gender,
 }
 
 
@@ -179,25 +209,57 @@ def build_data(gdf_levels: dict, cfg: dict, force: bool = False) -> dict:
             decimals = var.get("decimals", 2)
 
             if "ratio_numerator" in var:
-                # ── Ratio variable (employment rate, education %) ────────────
+                # ── Standard ratio ───────────────────────────────────────────
                 num_ind = var["ratio_numerator"]
                 den_ind = var.get("ratio_denominator", "Total")
-
                 num_df = df[df["indicator"] == num_ind][["CUSEC", "year", "value"]].rename(columns={"value": "num"})
                 den_df = df[df["indicator"] == den_ind][["CUSEC", "year", "value"]].rename(columns={"value": "den"})
-
                 merged = num_df.merge(den_df, on=["CUSEC", "year"])
                 merged = merged[merged["den"].notna() & (merged["den"] > 0) & merged["num"].notna()]
                 merged["ratio"] = (merged["num"] / merged["den"] * 100).round(decimals)
-
                 print(f"    [var] {var_id}: {len(merged):,} rows")
-
                 for _, row in merged.iterrows():
                     cusec = row["CUSEC"]
                     year  = int(row["year"]) if pd.notna(row["year"]) else None
-                    value = float(row["ratio"])
-                    if year and pd.notna(value):
-                        tract_data.setdefault(cusec, {}).setdefault(var_id, {})[year] = value
+                    if year and pd.notna(row["ratio"]):
+                        tract_data.setdefault(cusec, {}).setdefault(var_id, {})[year] = float(row["ratio"])
+
+            elif "ratio_complement_numerator" in var:
+                # ── Complement ratio: (den - num) / den × 100 ───────────────
+                num_ind = var["ratio_complement_numerator"]
+                den_ind = var.get("ratio_denominator", "Total")
+                num_df = df[df["indicator"] == num_ind][["CUSEC", "year", "value"]].rename(columns={"value": "num"})
+                den_df = df[df["indicator"] == den_ind][["CUSEC", "year", "value"]].rename(columns={"value": "den"})
+                merged = num_df.merge(den_df, on=["CUSEC", "year"])
+                merged = merged[merged["den"].notna() & (merged["den"] > 0) & merged["num"].notna()]
+                merged["ratio"] = ((merged["den"] - merged["num"]) / merged["den"] * 100).round(decimals)
+                print(f"    [var] {var_id}: {len(merged):,} rows")
+                for _, row in merged.iterrows():
+                    cusec = row["CUSEC"]
+                    year  = int(row["year"]) if pd.notna(row["year"]) else None
+                    if year and pd.notna(row["ratio"]):
+                        tract_data.setdefault(cusec, {}).setdefault(var_id, {})[year] = float(row["ratio"])
+
+            elif "ratio_sum_numerators" in var:
+                # ── Sum-ratio: sum of multiple indicators / denominator × 100 ─
+                num_inds = var["ratio_sum_numerators"]
+                den_ind  = var.get("ratio_denominator", "Total")
+                den_df   = df[df["indicator"] == den_ind][["CUSEC", "year", "value"]].rename(columns={"value": "den"})
+                num_dfs  = [df[df["indicator"] == ind][["CUSEC", "year", "value"]].copy() for ind in num_inds]
+                num_dfs  = [d for d in num_dfs if not d.empty]
+                if num_dfs:
+                    num_combined = pd.concat(num_dfs).groupby(["CUSEC", "year"], as_index=False)["value"].sum().rename(columns={"value": "num"})
+                    merged = num_combined.merge(den_df, on=["CUSEC", "year"])
+                    merged = merged[merged["den"].notna() & (merged["den"] > 0) & merged["num"].notna()]
+                    merged["ratio"] = (merged["num"] / merged["den"] * 100).round(decimals)
+                    print(f"    [var] {var_id}: {len(merged):,} rows")
+                    for _, row in merged.iterrows():
+                        cusec = row["CUSEC"]
+                        year  = int(row["year"]) if pd.notna(row["year"]) else None
+                        if year and pd.notna(row["ratio"]):
+                            tract_data.setdefault(cusec, {}).setdefault(var_id, {})[year] = float(row["ratio"])
+                else:
+                    print(f"    [var] {var_id}: 0 rows")
 
             else:
                 # ── Direct variable with configurable multiplier ─────────────
@@ -215,6 +277,25 @@ def build_data(gdf_levels: dict, cfg: dict, force: bool = False) -> dict:
                         value     = round(raw_value, decimals)
                         if year:
                             tract_data.setdefault(cusec, {}).setdefault(var_id, {})[year] = value
+
+        # ── Pyramid bands ──────────────────────────────────────────────────
+        pyramid_cfg = source_cfg.get("pyramid_bands")
+        if pyramid_cfg:
+            den_ind = pyramid_cfg["denominator"]
+            den_df  = df[df["indicator"] == den_ind][["CUSEC", "year", "value"]].rename(columns={"value": "den"})
+            for band in pyramid_cfg["bands"]:
+                band_id  = band["id"]
+                band_ind = band["indicator"]
+                num_df   = df[df["indicator"] == band_ind][["CUSEC", "year", "value"]].rename(columns={"value": "num"})
+                merged   = num_df.merge(den_df, on=["CUSEC", "year"])
+                merged   = merged[merged["den"].notna() & (merged["den"] > 0) & merged["num"].notna()]
+                merged["ratio"] = (merged["num"] / merged["den"] * 100).round(1)
+                for _, row in merged.iterrows():
+                    cusec = row["CUSEC"]
+                    year  = int(row["year"]) if pd.notna(row["year"]) else None
+                    if year and pd.notna(row["ratio"]):
+                        tract_data.setdefault(cusec, {}).setdefault(band_id, {})[year] = float(row["ratio"])
+            print(f"    [pyramid] {len(pyramid_cfg['bands'])} age bands stored")
 
     # ── Step 3: aggregate to municipality and province level ───────────────
     tracts_gdf     = gdf_levels["tracts"][["CUSEC", "CUMUN", "CPRO"]]
@@ -234,16 +315,23 @@ def build_data(gdf_levels: dict, cfg: dict, force: bool = False) -> dict:
                 if cpro:
                     prov_raw.setdefault(cpro, {}).setdefault(var_id, {}).setdefault(year, []).append(value)
 
-    def _avg(vals):
-        return round(sum(vals) / len(vals), 2) if vals else None
+    # Variables that should be summed (not averaged) when aggregating up
+    SUM_VARS = {"pop_total"}
+
+    def _agg(vals, var_id):
+        if not vals:
+            return None
+        if var_id in SUM_VARS:
+            return round(sum(vals), 0)
+        return round(sum(vals) / len(vals), 2)
 
     mun_data = {
-        cumun: {var_id: {yr: _avg(vals) for yr, vals in yrs.items()} for var_id, yrs in vd.items()}
+        cumun: {var_id: {yr: _agg(vals, var_id) for yr, vals in yrs.items()} for var_id, yrs in vd.items()}
         for cumun, vd in mun_raw.items()
     }
 
     prov_data = {
-        cpro: {var_id: {yr: _avg(vals) for yr, vals in yrs.items()} for var_id, yrs in vd.items()}
+        cpro: {var_id: {yr: _agg(vals, var_id) for yr, vals in yrs.items()} for var_id, yrs in vd.items()}
         for cpro, vd in prov_raw.items()
     }
 

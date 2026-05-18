@@ -6,7 +6,9 @@ export const COLOR_SCALES = {
   sequentialCool: ['#f1eef6', '#bdc9e1', '#74a9cf', '#0570b0'],  // PuBu — higher edu
   sequentialAlert:['#feebe2', '#fbb4b9', '#f768a1', '#ae017e'],  // RdPu — unemployment/risk
   sequentialGreen:['#edf8e9', '#bae4b3', '#74c476', '#238b45'],  // Greens — services/salaried
-  diverging:      ['#e66101', '#fdb863', '#b2abd2', '#5e3c99'],  // PuOr — reserved for Gini
+  diverging:      ['#e66101', '#fdb863', '#b2abd2', '#5e3c99'],  // PuOr — Gini / gender
+  sequentialBlue: ['#eff3ff', '#bdd7e7', '#6baed6', '#2171b5'],  // Blues — age/population
+  sequentialPurple:['#f2f0f7','#cbc9e2','#9e9ac8','#6a51a3'],   // Purples — foreign-born
 };
 
 export const VARIABLES = [
@@ -169,6 +171,58 @@ export const VARIABLES = [
     id: 'edu_higher_pct', label_en: 'Higher education',
     label_es: 'Educación superior', label_ca: 'Educació superior',
     unit: 'PCT', decimals: 1, colorScale: 'sequentialCool', category: 'Education',
+  },
+
+  // ── Population ────────────────────────────────────────────────────────────
+  {
+    id: 'pop_total', label_en: 'Total population',
+    label_es: 'Población total', label_ca: 'Població total',
+    unit: '', decimals: 0, colorScale: 'sequentialBlue', category: 'Population',
+  },
+  {
+    id: 'gender_ratio', label_en: 'Male population (%)',
+    label_es: 'Porcentaje de hombres', label_ca: "Percentatge d'homes",
+    unit: 'PCT', decimals: 1, colorScale: 'diverging', category: 'Population',
+  },
+  {
+    id: 'foreign_born_pct', label_en: 'Foreign-born population (%)',
+    label_es: 'Población nacida en el extranjero', label_ca: "Població nascuda a l'estranger",
+    unit: 'PCT', decimals: 1, colorScale: 'sequentialPurple', category: 'Population',
+  },
+  {
+    id: 'foreign_americas_pct', label_en: 'Born in the Americas (%)',
+    label_es: 'Nacidos en América', label_ca: 'Nascuts a Amèrica',
+    unit: 'PCT', decimals: 1, colorScale: 'sequentialPurple', category: 'Population',
+  },
+  {
+    id: 'foreign_africa_pct', label_en: 'Born in Africa (%)',
+    label_es: 'Nacidos en África', label_ca: "Nascuts a l'Àfrica",
+    unit: 'PCT', decimals: 1, colorScale: 'sequentialPurple', category: 'Population',
+  },
+  {
+    id: 'foreign_asia_pct', label_en: 'Born in Asia (%)',
+    label_es: 'Nacidos en Asia', label_ca: 'Nascuts a Àsia',
+    unit: 'PCT', decimals: 1, colorScale: 'sequentialPurple', category: 'Population',
+  },
+  {
+    id: 'foreign_europe_pct', label_en: 'Born in Europe excl. Spain (%)',
+    label_es: 'Nacidos en Europa (excl. España)', label_ca: 'Nascuts a Europa (excl. Espanya)',
+    unit: 'PCT', decimals: 1, colorScale: 'sequentialPurple', category: 'Population',
+  },
+  {
+    id: 'pop_under15_pct', label_en: 'Population under 15 (%)',
+    label_es: 'Población menor de 15 años', label_ca: 'Població menor de 15 anys',
+    unit: 'PCT', decimals: 1, colorScale: 'sequentialBlue', category: 'Population',
+  },
+  {
+    id: 'pop_15_64_pct', label_en: 'Population aged 15–64 (%)',
+    label_es: 'Población de 15 a 64 años', label_ca: 'Població de 15 a 64 anys',
+    unit: 'PCT', decimals: 1, colorScale: 'sequentialBlue', category: 'Population',
+  },
+  {
+    id: 'pop_65plus_pct', label_en: 'Population aged 65+ (%)',
+    label_es: 'Población de 65 años o más', label_ca: 'Població de 65 anys o més',
+    unit: 'PCT', decimals: 1, colorScale: 'sequentialAlert', category: 'Population',
   },
 ];
 

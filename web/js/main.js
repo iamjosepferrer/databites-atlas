@@ -367,6 +367,7 @@ const CATEGORY_META = {
   Income:     { label: 'Income',     icon: 'assets/icons/euro.png' },
   Employment: { label: 'Employment', icon: 'assets/icons/cogwheel.png' },
   Education:  { label: 'Education',  icon: 'assets/icons/mortarboard.png' },
+  Population: { label: 'Population', icon: 'assets/icons/population.png' },
 };
 
 async function buildSidebar(map) {
