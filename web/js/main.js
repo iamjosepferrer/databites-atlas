@@ -53,7 +53,7 @@ async function detectYearRange() {
   return { min, max };
 }
 
-function getVarYearLabel(varId) {
+function getVarYears(varId) {
   const data = dataCache['municipalities'];
   if (!data) return null;
   const years = new Set();
@@ -62,8 +62,13 @@ function getVarYearLabel(varId) {
     if (yearMap) Object.keys(yearMap).forEach(y => years.add(Number(y)));
   });
   if (years.size === 0) return null;
-  const sorted = [...years].sort((a, b) => a - b);
-  return `${sorted[0]}\u2013${sorted[sorted.length - 1]}`;
+  return [...years].sort((a, b) => a - b);
+}
+
+function getVarYearLabel(varId) {
+  const years2 = getVarYears(varId);
+  if (!years2) return null;
+  return `${years2[0]}\u2013${years2[years2.length - 1]}`;
 }
 
 // ── Filter helpers ───────────────────────────────────────────
@@ -300,11 +305,22 @@ function buildLevelSwitcher(map) {
 }
 
 // ── Year slider ──────────────────────────────────────────────
-async function buildYearSlider(map) {
+// Rebuilds or updates the slider to match the active variable's available years.
+// Also snaps activeYear to the variable's last available year.
+function updateYearSlider(map) {
   const container = document.getElementById('year-slider-wrap');
   if (!container) return;
 
-  const { min, max } = await detectYearRange();
+  const years = getVarYears(activeVar);
+  if (!years || years.length === 0) return;
+
+  const min = years[0];
+  const max = years[years.length - 1];
+
+  // Snap activeYear to the variable's last available year, or clamp to its range.
+  if (!years.includes(activeYear)) {
+    activeYear = max;
+  }
 
   container.innerHTML = `
     <div class="year-slider-header">
@@ -411,7 +427,7 @@ const CATEGORY_META = {
   Employment: { label: 'Employment', icon: 'assets/icons/cogwheel.png' },
   Education:  { label: 'Education',  icon: 'assets/icons/mortarboard.png' },
   Population:  { label: 'Population',  icon: 'assets/icons/population.png' },
-};
+}
 
 async function buildSidebar(map) {
   const container = document.getElementById('var-list');
@@ -478,6 +494,7 @@ async function buildSidebar(map) {
         btn.addEventListener('click', async () => {
           activeVar = v.id;
           activeFilters.clear();
+          updateYearSlider(map);   // snap year + update slider before recolor
           await buildSidebar(map);
           recolorAll(map);
           updateLegend(map);
@@ -539,7 +556,7 @@ async function init() {
 
     buildJumpTo(map);
     buildLevelSwitcher(map);
-    await buildYearSlider(map);
+    updateYearSlider(map);
     setupHover(map, () => activeLevel, () => activeVar);
     setupClick(map, () => activeLevel, () => dataCache, () => VARIABLE_MAP, () => activeYear);
 
