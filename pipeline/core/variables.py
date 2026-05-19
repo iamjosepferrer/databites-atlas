@@ -157,11 +157,46 @@ def parse_ine_padron_gender(raw: bytes, province_codes: list) -> pd.DataFrame:
     return df
 
 
+
+def parse_ine_padron_edad_gender(raw: bytes, province_codes: list) -> pd.DataFrame:
+    """
+    Parse Padrón Municipal age table keeping Hombres + Mujeres + Total rows.
+    Prefixes indicator with 'm_' for Hombres, 'f_' for Mujeres.
+    Total rows keep the indicator as-is — used as the pyramid denominator.
+    """
+    df = pd.read_csv(io.BytesIO(raw), sep=";", encoding="utf-8-sig", dtype=str)
+    df.columns = ["provincia", "municipio", "seccion", "sexo", "indicator", "year", "value"]
+
+    df = df[df["sexo"].str.strip().isin(["Hombres", "Mujeres", "Total"])].copy()
+
+    df["CUSEC"] = df["seccion"].str.extract(r"^(\d{10})")
+    df = df[df["CUSEC"].notna()].copy()
+    df = df[df["CUSEC"].str[:2].isin(province_codes)].copy()
+
+    def _prefix(row):
+        sexo = row["sexo"].strip()
+        ind  = row["indicator"].strip()
+        if sexo == "Hombres":
+            return f"m_{ind}"
+        if sexo == "Mujeres":
+            return f"f_{ind}"
+        return ind  # Total rows keep original indicator (used as denominator)
+
+    df["indicator"] = df.apply(_prefix, axis=1)
+    df["year"]  = pd.to_numeric(df["year"],  errors="coerce").astype("Int64")
+    df["value"] = df["value"].apply(_clean_censo_value)
+    df["value"] = pd.to_numeric(df["value"], errors="coerce")
+
+    df = df[["CUSEC", "indicator", "year", "value"]].reset_index(drop=True)
+    print(f"    [parsed] {len(df):,} rows for region tracts")
+    return df
+
 PARSERS = {
-    "ine_atlas_renta":      parse_ine_atlas_renta,
-    "ine_atlas_renta_2dim": parse_ine_atlas_renta_2dim,
-    "ine_censo_anual":      parse_ine_censo_anual,
-    "ine_padron_gender":    parse_ine_padron_gender,
+    "ine_atlas_renta":           parse_ine_atlas_renta,
+    "ine_atlas_renta_2dim":      parse_ine_atlas_renta_2dim,
+    "ine_censo_anual":           parse_ine_censo_anual,
+    "ine_padron_gender":         parse_ine_padron_gender,
+    "ine_padron_edad_gender":    parse_ine_padron_edad_gender,
 }
 
 

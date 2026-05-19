@@ -491,3 +491,58 @@ sources:
         - { id: age_90_94, indicator: "De 90 a 94 años" }
         - { id: age_95_99, indicator: "De 95 a 99 años" }
         - { id: age_100p,  indicator: "100 y más años"  }
+  # ── Population — age by gender (Padrón Municipal, one file per province) ───
+  ine_padron_edad_gender:
+    urls:
+      - "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/69129.csv"  # 08 Barcelona
+      - "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/69177.csv"  # 17 Girona
+      - "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/69205.csv"  # 25 Lleida
+      - "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/69269.csv"  # 43 Tarragona
+    type: ine_padron_edad_gender
+    label: "INE — Padrón Municipal (grupos de edad por sexo)"
+    variables: []
+    pyramid_bands:
+      denominator: "Todas las edades"
+      bands:
+        - { id: age_m_0_4,    indicator: "m_De 0 a 4 años"    }
+        - { id: age_f_0_4,    indicator: "f_De 0 a 4 años"    }
+        - { id: age_m_5_9,    indicator: "m_De 5 a 9 años"    }
+        - { id: age_f_5_9,    indicator: "f_De 5 a 9 años"    }
+        - { id: age_m_10_14,  indicator: "m_De 10 a 14 años"  }
+        - { id: age_f_10_14,  indicator: "f_De 10 a 14 años"  }
+        - { id: age_m_15_19,  indicator: "m_De 15 a 19 años"  }
+        - { id: age_f_15_19,  indicator: "f_De 15 a 19 años"  }
+        - { id: age_m_20_24,  indicator: "m_De 20 a 24 años"  }
+        - { id: age_f_20_24,  indicator: "f_De 20 a 24 años"  }
+        - { id: age_m_25_29,  indicator: "m_De 25 a 29 años"  }
+        - { id: age_f_25_29,  indicator: "f_De 25 a 29 años"  }
+        - { id: age_m_30_34,  indicator: "m_De 30 a 34 años"  }
+        - { id: age_f_30_34,  indicator: "f_De 30 a 34 años"  }
+        - { id: age_m_35_39,  indicator: "m_De 35 a 39 años"  }
+        - { id: age_f_35_39,  indicator: "f_De 35 a 39 años"  }
+        - { id: age_m_40_44,  indicator: "m_De 40 a 44 años"  }
+        - { id: age_f_40_44,  indicator: "f_De 40 a 44 años"  }
+        - { id: age_m_45_49,  indicator: "m_De 45 a 49 años"  }
+        - { id: age_f_45_49,  indicator: "f_De 45 a 49 años"  }
+        - { id: age_m_50_54,  indicator: "m_De 50 a 54 años"  }
+        - { id: age_f_50_54,  indicator: "f_De 50 a 54 años"  }
+        - { id: age_m_55_59,  indicator: "m_De 55 a 59 años"  }
+        - { id: age_f_55_59,  indicator: "f_De 55 a 59 años"  }
+        - { id: age_m_60_64,  indicator: "m_De 60 a 64 años"  }
+        - { id: age_f_60_64,  indicator: "f_De 60 a 64 años"  }
+        - { id: age_m_65_69,  indicator: "m_De 65 a 69 años"  }
+        - { id: age_f_65_69,  indicator: "f_De 65 a 69 años"  }
+        - { id: age_m_70_74,  indicator: "m_De 70 a 74 años"  }
+        - { id: age_f_70_74,  indicator: "f_De 70 a 74 años"  }
+        - { id: age_m_75_79,  indicator: "m_De 75 a 79 años"  }
+        - { id: age_f_75_79,  indicator: "f_De 75 a 79 años"  }
+        - { id: age_m_80_84,  indicator: "m_De 80 a 84 años"  }
+        - { id: age_f_80_84,  indicator: "f_De 80 a 84 años"  }
+        - { id: age_m_85_89,  indicator: "m_De 85 a 89 años"  }
+        - { id: age_f_85_89,  indicator: "f_De 85 a 89 años"  }
+        - { id: age_m_90_94,  indicator: "m_De 90 a 94 años"  }
+        - { id: age_f_90_94,  indicator: "f_De 90 a 94 años"  }
+        - { id: age_m_95_99,  indicator: "m_De 95 a 99 años"  }
+        - { id: age_f_95_99,  indicator: "f_De 95 a 99 años"  }
+        - { id: age_m_100p,   indicator: "m_100 y más años"    }
+        - { id: age_f_100p,   indicator: "f_100 y más años"    }
