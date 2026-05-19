@@ -506,7 +506,7 @@ export function setupClick(map, getActiveLevel, getAllData, getVarMap, getYear) 
       } else if (levelId === 'municipalities') {
         name   = props.NMUN || props.CUMUN;
         code   = `Municipality · ${props.CUMUN}`;
-        parent = `${PROVINCE_NAMES[props.CUMUN?.slice(0,2)] || ''} province · Catalonia`;
+        parent = PROVINCE_NAMES[props.CUMUN?.slice(0,2)] || '';
       } else {
         name   = props.NMUN || `Tract ${props.CUSEC}`;
         code   = `Census tract · ${props.CUSEC}`;
@@ -532,13 +532,12 @@ export function setupClick(map, getActiveLevel, getAllData, getVarMap, getYear) 
 
       // KPI strip — 7 key indicators at a glance
       const kpis = [
-        { label: 'Population',        id: 'pop_total'              },
-        { label: 'Net income / cap',  id: 'net_income_pc'          },
-        { label: 'Foreign born',      id: 'foreign_born_pct'       },
-        { label: 'Employment',        id: 'employment_rate'        },
-        { label: 'Poverty (<60% med)',id: 'poverty_60_median_pct'  },
-        { label: 'High-skill jobs',   id: 'occ_high_skill_pct'     },
-        { label: 'Pop. aged 15–64',   id: 'pop_15_64_pct'         },
+        { label: 'Population',        id: 'pop_total'             },
+        { label: 'Net income / cap',  id: 'net_income_pc'         },
+        { label: 'Foreign born',      id: 'foreign_born_pct'      },
+        { label: 'Employment',        id: 'employment_rate'       },
+        { label: 'Poverty (<60% med)',id: 'poverty_60_median_pct' },
+        { label: 'Pop. aged 15–64',   id: 'pop_15_64_pct'        },
       ];
       document.getElementById('detail-kpi-strip').innerHTML = kpis.map(k => {
         const v = areaData?.[k.id]?.[year];
@@ -549,7 +548,21 @@ export function setupClick(map, getActiveLevel, getAllData, getVarMap, getYear) 
         </div>`;
       }).join('');
 
-      // Show panel FIRST so MapLibre container has dimensions
+      // Position panel below legend to avoid overlap
+      function positionPanel() {
+        const legend = document.getElementById('legend');
+        if (legend && legend.style.display !== 'none') {
+          const bottom = legend.getBoundingClientRect().bottom;
+          const mapTop = panel.parentElement.getBoundingClientRect().top;
+          panel.style.top = Math.max(120, bottom - mapTop + 8) + 'px';
+        } else {
+          panel.style.top = '120px';
+        }
+      }
+      positionPanel();
+      // Reposition if legend changes size (filter clicks)
+      new ResizeObserver(positionPanel).observe(document.getElementById('legend'));
+
       panel.style.display = 'flex';
       updateShapeMap(geom);
 
@@ -659,7 +672,7 @@ export function setupClick(map, getActiveLevel, getAllData, getVarMap, getYear) 
         </div>`;
 
       // Build horizontally snapping sections
-      const SECTIONS = ['Income','Population','Demographics','Education','Employment'];
+      const SECTIONS = ['Income','Employment','Education','Population'];
 
       // Nav tabs
       const navHtml = SECTIONS.map((s,i) =>
@@ -776,7 +789,7 @@ export function setupClick(map, getActiveLevel, getAllData, getVarMap, getYear) 
         ${buildHBar('Elementary',  fmtVal('occ_elementary_pct'),  rawVal('occ_elementary_pct'),  '#e05c5c')}
       </div>`;
 
-      document.getElementById('detail-body').innerHTML = s1 + s2 + s3 + s4 + s5;
+      document.getElementById('detail-body').innerHTML = s1 + s5 + s4 + s2;
       document.getElementById('detail-body').scrollLeft = 0;
 
       e.stopPropagation();
