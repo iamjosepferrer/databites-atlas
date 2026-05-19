@@ -40,11 +40,30 @@ async function loadData(levelId) {
 
 async function detectYearRange() {
   const data = await loadData('municipalities');
-  const firstEntry = Object.values(data)[0];
-  const years = Object.keys(firstEntry?.['net_income_pc'] || {})
-    .map(Number)
-    .sort((a, b) => a - b);
-  return { min: years[0], max: years[years.length - 1] };
+  let min = Infinity, max = -Infinity;
+  Object.values(data).forEach(tract => {
+    Object.values(tract).forEach(yearMap => {
+      Object.keys(yearMap).forEach(y => {
+        const n = Number(y);
+        if (n < min) min = n;
+        if (n > max) max = n;
+      });
+    });
+  });
+  return { min, max };
+}
+
+function getVarYearLabel(varId) {
+  const data = dataCache['municipalities'];
+  if (!data) return null;
+  const years = new Set();
+  Object.values(data).forEach(tract => {
+    const yearMap = tract?.[varId];
+    if (yearMap) Object.keys(yearMap).forEach(y => years.add(Number(y)));
+  });
+  if (years.size === 0) return null;
+  const sorted = [...years].sort((a, b) => a - b);
+  return `${sorted[0]}\u2013${sorted[sorted.length - 1]}`;
 }
 
 // ── Filter helpers ───────────────────────────────────────────
@@ -367,7 +386,6 @@ const CATEGORY_META = {
   Income:     { label: 'Income',     icon: 'assets/icons/euro.png' },
   Employment: { label: 'Employment', icon: 'assets/icons/cogwheel.png' },
   Education:  { label: 'Education',  icon: 'assets/icons/mortarboard.png' },
-  Population: { label: 'Population', icon: 'assets/icons/population.png' },
 };
 
 async function buildSidebar(map) {
@@ -425,9 +443,10 @@ async function buildSidebar(map) {
         const btn = document.createElement('button');
         btn.className  = 'var-btn';
         btn.dataset.id = v.id;
+        const varLabel = getVarYearLabel(v.id) || yearLabel;
         btn.innerHTML  = `
           <span class="var-btn-label">${v.label_en}</span>
-          <span class="var-btn-years">${yearLabel}</span>
+          <span class="var-btn-years">${varLabel}</span>
         `;
         if (v.id === activeVar) btn.classList.add('active');
 
@@ -468,6 +487,7 @@ async function init() {
       raiseOverlays(map);
       updateFeatured(map);
       updateLegend(map);
+      buildSidebar(map); // rebuild with per-variable year ranges now available
     });
 
     const loading = new Set();
