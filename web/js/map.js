@@ -5,6 +5,22 @@ import { LEVELS, VARIABLE_MAP, DEFAULT_YEAR, COLOR_SCALES } from './config.js';
 // tracks which levels are loaded
 const loadedLevels = new Set();
 
+// ── Shared value formatter ────────────────────────────────────
+// Used by tooltip, click panel, and legend so formatting is always consistent.
+function formatValue(val, varCfg) {
+  if (val == null) return 'No data';
+  if (varCfg.unit === 'EUR') return `€${Math.round(val).toLocaleString('es-ES')}`;
+  if (varCfg.unit === 'PCT') return `${val.toFixed(varCfg.decimals)}%`;
+  // Absolute number (population, counts, etc.) — force grouping so 4-digit
+  // numbers like 1.671 always get the thousands separator.
+  if (varCfg.decimals === 0) return Math.round(val).toLocaleString('es-ES', { useGrouping: true });
+  return val.toLocaleString('es-ES', {
+    minimumFractionDigits: varCfg.decimals,
+    maximumFractionDigits: varCfg.decimals,
+    useGrouping: true,
+  });
+}
+
 export function initMap() {
   const map = new maplibregl.Map({
     container: 'map',
@@ -100,10 +116,21 @@ function joinAndColor(geo, data, idCol, varId, varCfg, year, filterSteps = []) {
 
   if (values.length === 0) return geo;
 
-  const min     = Math.min(...values);
-  const max     = Math.max(...values);
+  // Quantile thresholds — same logic as the legend — so outliers like Barcelona
+  // don't compress the entire colour scale to the bottom end.
+  const n      = 5;
+  const sorted = [...values].sort((a, b) => a - b);
+  const thresholds = [];
+  for (let i = 0; i <= n; i++) {
+    const idx = Math.floor((i / n) * (sorted.length - 1));
+    thresholds.push(sorted[idx]);
+  }
+  const uniqueT = [...new Set(thresholds)];
+
   const scale   = COLOR_SCALES[varCfg.colorScale];
-  const colorFn = chroma.scale(scale).domain([min, max]);
+  const colorFn = uniqueT.length > 1
+    ? chroma.scale(scale).classes(uniqueT)
+    : chroma.scale(scale).domain([sorted[0], sorted[sorted.length - 1]]);
 
   const features = geo.features.map(f => {
     const id    = f.properties[idCol];
@@ -211,11 +238,7 @@ export function setupHover(map, getActiveLevel, getActiveVar) {
         name = `${props.NMUN || ''} <span class="tooltip-id">(${props.CUSEC || ''})</span>`;
       }
 
-      const formatted = value != null
-        ? varCfg.unit === 'EUR' ? `€${Math.round(value).toLocaleString('es-ES')}`
-        : varCfg.unit === 'PCT' ? `${value.toFixed(varCfg.decimals)}%`
-        : value.toFixed(varCfg.decimals)
-        : 'No data';
+      const formatted = formatValue(value, varCfg);
 
       tooltip.style.display = 'block';
       tooltip.style.left    = `${e.point.x + 14}px`;
@@ -284,11 +307,7 @@ export function setupClick(map, getActiveLevel, getAllData, getVarMap, getYear) 
           ? Math.round(((val - min) / (max - min)) * 100)
           : null;
 
-        const formatted = val != null
-          ? varCfg.unit === 'EUR' ? `€${Math.round(val).toLocaleString('es-ES')}`
-          : varCfg.unit === 'PCT' ? `${val.toFixed(varCfg.decimals)}%`
-          : val.toFixed(varCfg.decimals)
-          : 'No data';
+        const formatted = formatValue(val, varCfg);
 
         const row = document.createElement('div');
         row.className = 'detail-row';

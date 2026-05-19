@@ -108,18 +108,27 @@ function computeLegendSteps(data, varId, year, varCfg, n = 5) {
 function formatLegendVal(val, varCfg) {
   if (varCfg.unit === 'EUR') return `€${Math.round(val).toLocaleString('es-ES')}`;
   if (varCfg.unit === 'PCT') return `${val.toFixed(varCfg.decimals)}%`;
-  return val.toFixed(varCfg.decimals);
+  // Absolute number — force grouping so 4-digit numbers like 1.671 always
+  // get the thousands separator.
+  if (varCfg.decimals === 0) return Math.round(val).toLocaleString('es-ES', { useGrouping: true });
+  return val.toLocaleString('es-ES', {
+    minimumFractionDigits: varCfg.decimals,
+    maximumFractionDigits: varCfg.decimals,
+    useGrouping: true,
+  });
 }
 
 function updateLegend(map) {
   const container = document.getElementById('legend');
   if (!container) return;
 
-  const munData = dataCache['municipalities'];
-  if (!munData) { container.style.display = 'none'; return; }
+  // Use active level's data so legend ranges match what's visible on the map.
+  // Fall back to municipalities if the active level isn't loaded yet.
+  const levelData = dataCache[activeLevel] || dataCache['municipalities'];
+  if (!levelData) { container.style.display = 'none'; return; }
 
   const varCfg = VARIABLE_MAP[activeVar];
-  legendSteps  = computeLegendSteps(munData, activeVar, activeYear, varCfg);
+  legendSteps  = computeLegendSteps(levelData, activeVar, activeYear, varCfg);
 
   if (legendSteps.length === 0) { container.style.display = 'none'; return; }
 
@@ -506,6 +515,7 @@ async function init() {
       }
       setActiveLevel(map, active.id);
       activeLevel = active.id;
+      updateLegend(map);
       document.querySelectorAll('.level-btn').forEach(b => {
         b.classList.toggle('active', b.dataset.id === active.id);
       });
