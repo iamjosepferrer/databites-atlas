@@ -92,15 +92,30 @@ function computeLegendSteps(data, varId, year, varCfg, n = 5) {
   const colorFn = chroma.scale(scale).domain([0, n - 1]);
   const steps   = [];
 
-  for (let i = 0; i < n; i++) {
-    const loIdx = Math.floor((i / n) * values.length);
-    const hiIdx = Math.min(Math.floor(((i + 1) / n) * values.length) - 1, values.length - 1);
-    steps.push({
-      min:   values[loIdx],
-      max:   values[hiIdx],
-      color: colorFn(i).hex(),
-      index: i,
-    });
+  if (varCfg.logScale && values[0] > 0) {
+    // Log-equal steps: each bucket spans an equal ratio, matching the map's colour scale.
+    const logMin = Math.log(values[0]);
+    const logMax = Math.log(values[values.length - 1]);
+    for (let i = 0; i < n; i++) {
+      steps.push({
+        min:   Math.exp(logMin + (i / n)       * (logMax - logMin)),
+        max:   Math.exp(logMin + ((i + 1) / n) * (logMax - logMin)),
+        color: colorFn(i).hex(),
+        index: i,
+      });
+    }
+  } else {
+    // Quantile steps for PCT and ratio variables.
+    for (let i = 0; i < n; i++) {
+      const loIdx = Math.floor((i / n) * values.length);
+      const hiIdx = Math.min(Math.floor(((i + 1) / n) * values.length) - 1, values.length - 1);
+      steps.push({
+        min:   values[loIdx],
+        max:   values[hiIdx],
+        color: colorFn(i).hex(),
+        index: i,
+      });
+    }
   }
   return steps;
 }
@@ -395,6 +410,7 @@ const CATEGORY_META = {
   Income:     { label: 'Income',     icon: 'assets/icons/euro.png' },
   Employment: { label: 'Employment', icon: 'assets/icons/cogwheel.png' },
   Education:  { label: 'Education',  icon: 'assets/icons/mortarboard.png' },
+  Population:  { label: 'Population',  icon: 'assets/icons/population.png' },
 };
 
 async function buildSidebar(map) {

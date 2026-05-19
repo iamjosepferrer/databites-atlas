@@ -116,20 +116,32 @@ function joinAndColor(geo, data, idCol, varId, varCfg, year, filterSteps = []) {
 
   if (values.length === 0) return geo;
 
-  // Quantile thresholds — same logic as the legend — so outliers like Barcelona
-  // don't compress the entire colour scale to the bottom end.
+  // Build colour domain thresholds:
+  // - logScale variables (income, population): equal steps in log space so
+  //   doubling always looks the same regardless of absolute value.
+  // - everything else (PCT, ratios): quantile steps so dense bands get
+  //   good visual separation.
   const n      = 5;
   const sorted = [...values].sort((a, b) => a - b);
-  const thresholds = [];
-  for (let i = 0; i <= n; i++) {
-    const idx = Math.floor((i / n) * (sorted.length - 1));
-    thresholds.push(sorted[idx]);
-  }
-  const uniqueT = [...new Set(thresholds)];
+  let thresholds = [];
 
+  if (varCfg.logScale && sorted[0] > 0) {
+    const logMin = Math.log(sorted[0]);
+    const logMax = Math.log(sorted[sorted.length - 1]);
+    for (let i = 0; i <= n; i++) {
+      thresholds.push(Math.exp(logMin + (i / n) * (logMax - logMin)));
+    }
+  } else {
+    for (let i = 0; i <= n; i++) {
+      const idx = Math.floor((i / n) * (sorted.length - 1));
+      thresholds.push(sorted[idx]);
+    }
+  }
+
+  const uniqueT = [...new Set(thresholds)];
   const scale   = COLOR_SCALES[varCfg.colorScale];
   const colorFn = uniqueT.length > 1
-    ? chroma.scale(scale).classes(uniqueT)
+    ? chroma.scale(scale).domain(uniqueT)
     : chroma.scale(scale).domain([sorted[0], sorted[sorted.length - 1]]);
 
   const features = geo.features.map(f => {

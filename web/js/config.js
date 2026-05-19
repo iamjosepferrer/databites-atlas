@@ -1,14 +1,14 @@
 // config.js - all frontend configuration
 
 export const COLOR_SCALES = {
-  sequential:     ['#fef0d9', '#fdcc8a', '#fc8d59', '#d7301f'],  // OrRd — income
-  sequentialWarm: ['#ffffd4', '#fed98e', '#fe9929', '#cc4c02'],  // YlOrBr — employment/low-edu
-  sequentialCool: ['#f1eef6', '#bdc9e1', '#74a9cf', '#0570b0'],  // PuBu — higher edu
-  sequentialAlert:['#feebe2', '#fbb4b9', '#f768a1', '#ae017e'],  // RdPu — unemployment/risk
-  sequentialGreen:['#edf8e9', '#bae4b3', '#74c476', '#238b45'],  // Greens — services/salaried
-  diverging:      ['#e66101', '#fdb863', '#b2abd2', '#5e3c99'],  // PuOr — Gini / gender
-  sequentialBlue: ['#eff3ff', '#bdd7e7', '#6baed6', '#2171b5'],  // Blues — age/population
-  sequentialPurple:['#f2f0f7','#cbc9e2','#9e9ac8','#6a51a3'],   // Purples — foreign-born
+  sequential:     ['#fef0d9', '#fdcc8a', '#fc8d59', '#d7301f'],
+  sequentialWarm: ['#ffffd4', '#fed98e', '#fe9929', '#cc4c02'],
+  sequentialCool: ['#f1eef6', '#bdc9e1', '#74a9cf', '#0570b0'],
+  sequentialAlert:['#feebe2', '#fbb4b9', '#f768a1', '#ae017e'],
+  sequentialGreen:['#edf8e9', '#bae4b3', '#74c476', '#238b45'],
+  diverging:      ['#e66101', '#fdb863', '#b2abd2', '#5e3c99'],
+  sequentialBlue: ['#eff3ff', '#bdd7e7', '#6baed6', '#2171b5'],
+  sequentialPurple:['#f2f0f7','#cbc9e2','#9e9ac8','#6a51a3'],
 };
 
 export const VARIABLES = [
@@ -17,70 +17,49 @@ export const VARIABLES = [
   {
     id: 'net_income_pc', label_en: 'Net income per capita',
     label_es: 'Renta neta media por persona', label_ca: 'Renda neta mitjana per persona',
-    unit: 'EUR', decimals: 0, colorScale: 'sequential', category: 'Income',
+    unit: 'EUR', decimals: 0, colorScale: 'sequential', category: 'Income', logScale: true,
   },
   {
     id: 'net_income_hh', label_en: 'Net income per household',
     label_es: 'Renta neta media por hogar', label_ca: 'Renda neta mitjana per llar',
-    unit: 'EUR', decimals: 0, colorScale: 'sequential', category: 'Income',
+    unit: 'EUR', decimals: 0, colorScale: 'sequential', category: 'Income', logScale: true,
   },
   {
     id: 'median_income_cu', label_en: 'Median income per equivalent adult',
     label_es: 'Mediana de la renta por unidad de consumo', label_ca: 'Mediana de la renda per unitat de consum',
-    unit: 'EUR', decimals: 0, colorScale: 'sequential', category: 'Income',
+    unit: 'EUR', decimals: 0, colorScale: 'sequential', category: 'Income', logScale: true,
   },
   {
     id: 'gross_income_pc', label_en: 'Gross income per capita',
     label_es: 'Renta bruta media por persona', label_ca: 'Renda bruta mitjana per persona',
-    unit: 'EUR', decimals: 0, colorScale: 'sequential', category: 'Income',
+    unit: 'EUR', decimals: 0, colorScale: 'sequential', category: 'Income', logScale: true,
   },
   {
     id: 'gross_income_hh', label_en: 'Gross income per household',
     label_es: 'Renta bruta media por hogar', label_ca: 'Renda bruta mitjana per llar',
-    unit: 'EUR', decimals: 0, colorScale: 'sequential', category: 'Income',
+    unit: 'EUR', decimals: 0, colorScale: 'sequential', category: 'Income', logScale: true,
   },
-
   {
-    id:       'gini',
-    label_en: 'Gini index (inequality)',
-    label_es: 'Índice de Gini',
-    label_ca: 'Índex de Gini',
-    unit:     'PCT',
-    decimals: 1,
-    colorScale: 'diverging',
-    category: 'Income',
+    id: 'gini', label_en: 'Gini index (inequality)',
+    label_es: 'Índice de Gini', label_ca: 'Índex de Gini',
+    unit: 'PCT', decimals: 1, colorScale: 'diverging', category: 'Income',
   },
-
   {
-    id:       'p80_p20',
-    label_en: 'P80/P20 income ratio',
-    label_es: 'Distribución de la renta P80/P20',
-    label_ca: 'Distribució de la renda P80/P20',
-    unit:     '',
-    decimals: 2,
-    colorScale: 'diverging',
-    category: 'Income',
+    id: 'p80_p20', label_en: 'P80/P20 income ratio',
+    label_es: 'Distribución de la renta P80/P20', label_ca: 'Distribució de la renda P80/P20',
+    unit: '', decimals: 2, colorScale: 'diverging', category: 'Income',
   },
-
-    {
-    id:       'poverty_60_median_pct',
-    label_en: 'Population below 60% median income',
+  {
+    id: 'poverty_60_median_pct', label_en: 'Population below 60% median income',
     label_es: 'Población con ingresos por debajo 60% de la mediana',
     label_ca: 'Població amb ingressos per sota 60% de la mediana',
-    unit:     'PCT',
-    decimals: 1,
-    colorScale: 'sequentialAlert',
-    category: 'Income',
+    unit: 'PCT', decimals: 1, colorScale: 'sequentialAlert', category: 'Income',
   },
   {
-    id:       'poverty_10k_pct',
-    label_en: 'Population with income below €10,000',
+    id: 'poverty_10k_pct', label_en: 'Population with income below €10,000',
     label_es: 'Población con ingresos por debajo de 10.000€',
     label_ca: 'Població amb ingressos per sota 10.000€',
-    unit:     'PCT',
-    decimals: 1,
-    colorScale: 'sequentialAlert',
-    category: 'Income',
+    unit: 'PCT', decimals: 1, colorScale: 'sequentialAlert', category: 'Income',
   },
 
   // ── Employment — activity ─────────────────────────────────────────────────
@@ -96,7 +75,8 @@ export const VARIABLES = [
   },
   {
     id: 'pension_recipients_pct', label_en: 'Pension / disability recipients',
-    label_es: 'Perceptores de pensión (incapacidad, jubilación)', label_ca: 'Perceptors de pensió (incapacitat, jubilació)',
+    label_es: 'Perceptores de pensión (incapacidad, jubilación)',
+    label_ca: 'Perceptors de pensió (incapacitat, jubilació)',
     unit: 'PCT', decimals: 1, colorScale: 'sequentialAlert', category: 'Employment',
   },
 
@@ -177,7 +157,7 @@ export const VARIABLES = [
   {
     id: 'pop_total', label_en: 'Total population',
     label_es: 'Población total', label_ca: 'Població total',
-    unit: '', decimals: 0, colorScale: 'sequentialBlue', category: 'Population',
+    unit: '', decimals: 0, colorScale: 'sequentialBlue', category: 'Population', logScale: true,
   },
   {
     id: 'gender_ratio', label_en: 'Male population (%)',
