@@ -289,6 +289,35 @@ const AGE_BANDS = [
   { label: '100+',  m: 'age_m_100p',  f: 'age_f_100p'  },
 ];
 
+function buildAgeStructure(areaData, year) {
+  // Uses the 3 aggregate age bands always available in the data.
+  // Renders a horizontal bar chart split male/female if gender data exists,
+  // otherwise a simple 3-bar age breakdown.
+  const bands = [
+    { label: 'Under 15', id: 'pop_under15_pct', color: '#a8ddc4' },
+    { label: '15 – 64',  id: 'pop_15_64_pct',  color: '#2d9b4e' },
+    { label: '65+',      id: 'pop_65plus_pct',  color: '#6baed6' },
+  ].map(b => ({ ...b, val: areaData?.[b.id]?.[year] ?? null }));
+
+  if (!bands.some(b => b.val != null)) return '';
+
+  const rows = bands.map(b => {
+    if (b.val == null) return '';
+    return `<div class="age-band-row">
+      <div class="age-band-label">${b.label}</div>
+      <div class="age-band-track">
+        <div class="age-band-fill" style="width:${b.val.toFixed(1)}%;background:${b.color}"></div>
+      </div>
+      <div class="age-band-value">${b.val.toFixed(1)}%</div>
+    </div>`;
+  }).join('');
+
+  return `<div class="age-structure-wrap">
+    <div class="age-structure-title">AGE STRUCTURE</div>
+    ${rows}
+  </div>`;
+}
+
 function buildAgePyramid(areaData, year) {
   // Extract values for each band
   const bands = AGE_BANDS.map(b => ({
@@ -430,7 +459,11 @@ function buildSparkline(areaData, varId, levelLookup, W = 200, H = 26) {
   const tTxt  = tPct != null ? `${tUp?'↗':'↘'} ${tUp?'+':''}${tPct}%` : '';
 
   return `<div class="spark-wrap">
-    <div class="spark-trend ${tUp?'trend-up':'trend-dn'}">${tTxt}</div>
+    <div class="spark-header">
+      <span class="spark-years-left">${pts[0].y}</span>
+      ${avgLine ? '<span class="spark-avg">― Catalonia avg</span>' : ''}
+      <span class="${tUp ? 'spark-trend trend-up' : 'spark-trend trend-dn'}">${tTxt}</span>
+    </div>
     <svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg">
       ${avgLine?`<polyline points="${avgLine}" fill="none" stroke="#555e68"
         stroke-width="1" stroke-dasharray="3,3"/>`:''}
@@ -438,10 +471,8 @@ function buildSparkline(areaData, varId, levelLookup, W = 200, H = 26) {
         stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
       <circle cx="${lastX}" cy="${lastY}" r="2.5" fill="#38b86e"/>
     </svg>
-    <div class="spark-years">
-      <span>${pts[0].y}</span>
-      ${avgLine?'<span class="spark-avg">― Catalonia avg</span>':''}
-      <span>${pts[pts.length-1].y}</span>
+    <div class="spark-footer">
+      <span class="spark-year-end">${pts[pts.length-1].y}</span>
     </div>
   </div>`;
 }
@@ -457,15 +488,23 @@ function buildHBar(label, value, rawVal, color) {
 
 function buildEduLadder(areaData, year) {
   const segs = [
-    { id:'edu_primary_pct',         label:'Primary',    color:'#e05c5c' },
-    { id:'edu_lower_secondary_pct', label:'Lower sec.', color:'#fe9929' },
-    { id:'edu_upper_secondary_pct', label:'Upper sec.', color:'#74c476' },
-    { id:'edu_higher_pct',          label:'Higher',     color:'#6baed6' },
-  ].map(s => ({ ...s, val: areaData?.[s.id]?.[year] ?? 0 }));
-  if (!segs.some(s => s.val > 0)) return '';
-  const bars   = segs.map(s=>`<div class="edu-seg" style="width:${s.val.toFixed(1)}%;background:${s.color}" title="${s.label}: ${s.val.toFixed(1)}%"></div>`).join('');
-  const legend = segs.map(s=>`<div class="edu-leg-item"><div class="edu-leg-dot" style="background:${s.color}"></div><span>${s.label} ${s.val>0?s.val.toFixed(1)+'%':'—'}</span></div>`).join('');
-  return `<div class="edu-ladder-wrap"><div class="edu-bar">${bars}</div><div class="edu-legend">${legend}</div></div>`;
+    { id:'edu_primary_pct',         label:'Primary or below', color:'#e05c5c' },
+    { id:'edu_lower_secondary_pct', label:'Lower secondary',  color:'#fe9929' },
+    { id:'edu_upper_secondary_pct', label:'Upper secondary',  color:'#74c476' },
+    { id:'edu_higher_pct',          label:'Higher education', color:'#6baed6' },
+  ].map(s => ({ ...s, val: areaData?.[s.id]?.[year] ?? null }));
+  if (!segs.some(s => s.val != null)) return '';
+  const rows = segs.map(s => {
+    if (s.val == null) return '';
+    return `<div class="age-band-row">
+      <div class="age-band-label" style="width:100px">${s.label}</div>
+      <div class="age-band-track">
+        <div class="age-band-fill" style="width:${s.val.toFixed(1)}%;background:${s.color}"></div>
+      </div>
+      <div class="age-band-value">${s.val.toFixed(1)}%</div>
+    </div>`;
+  }).join('');
+  return `<div class="age-structure-wrap"><div class="age-structure-title">EDUCATION LEVEL</div>${rows}</div>`;
 }
 
 function buildColSection(title, html) {
@@ -699,7 +738,7 @@ export function setupClick(map, getActiveLevel, getAllData, getVarMap, getYear) 
       };
 
       // Section 1: Income
-      const s1 = `<div class="report-section">
+      const s1 = `<div class="report-section"><div class="section-scroll">
         <div class="wiki-card">
           <div class="wiki-card-label">Net income per capita</div>
           <div class="wiki-card-value">${fmtVal('net_income_pc')??'—'}</div>
@@ -719,25 +758,21 @@ export function setupClick(map, getActiveLevel, getAllData, getVarMap, getYear) 
           <div class="mini-stat"><div class="mini-label">Gini index</div><div class="mini-value">${fmtVal('gini')??'—'}</div></div>
           <div class="mini-stat"><div class="mini-label">Poverty rate</div><div class="mini-value">${fmtVal('poverty_60_median_pct')??'—'}</div></div>
         </div>
-      </div>`;
+      </div></div>`;
 
       // Section 2: Population
-      const s2 = `<div class="report-section">
+      const s2 = `<div class="report-section"><div class="section-scroll">
         <div class="wiki-card">
           <div class="wiki-card-label">Total population</div>
           <div class="wiki-card-value">${fmtVal('pop_total')??'—'}</div>
           ${spark('pop_total')}
         </div>
-        <div class="mini-grid-3">
-          <div class="mini-stat"><div class="mini-label">Under 15</div><div class="mini-value">${fmtVal('pop_under15_pct')??'—'}</div></div>
-          <div class="mini-stat"><div class="mini-label">15–64</div><div class="mini-value">${fmtVal('pop_15_64_pct')??'—'}</div></div>
-          <div class="mini-stat"><div class="mini-label">65+</div><div class="mini-value">${fmtVal('pop_65plus_pct')??'—'}</div></div>
-        </div>
+        ${buildAgeStructure(areaData, year)}
         ${buildAgePyramid(areaData, year)}
-      </div>`;
+      </div></div>`;
 
       // Section 3: Demographics
-      const s3 = `<div class="report-section">
+      const s3 = `<div class="report-section"><div class="section-scroll">
         <div class="wiki-card">
           <div class="wiki-card-label">Foreign born</div>
           <div class="wiki-card-value">${fmtVal('foreign_born_pct')??'—'}</div>
@@ -752,10 +787,10 @@ export function setupClick(map, getActiveLevel, getAllData, getVarMap, getYear) 
         ${buildHBar('Male',     fmtVal('gender_ratio'),         rawVal('gender_ratio'),         '#6baed6')}
         ${buildHBar('Under 15', fmtVal('pop_under15_pct'),      rawVal('pop_under15_pct'),      '#a8ddc4')}
         ${buildHBar('65+',      fmtVal('pop_65plus_pct'),       rawVal('pop_65plus_pct'),       '#e05c5c')}
-      </div>`;
+      </div></div>`;
 
       // Section 4: Education
-      const s4 = `<div class="report-section">
+      const s4 = `<div class="report-section"><div class="section-scroll">
         ${buildEduLadder(areaData, year)}
         <div class="wiki-card">
           <div class="wiki-card-label">Higher education</div>
@@ -766,10 +801,10 @@ export function setupClick(map, getActiveLevel, getAllData, getVarMap, getYear) 
           <div class="mini-stat"><div class="mini-label">Primary or below</div><div class="mini-value">${fmtVal('edu_primary_pct')??'—'}</div></div>
           <div class="mini-stat"><div class="mini-label">Upper secondary</div><div class="mini-value">${fmtVal('edu_upper_secondary_pct')??'—'}</div></div>
         </div>
-      </div>`;
+      </div></div>`;
 
       // Section 5: Employment
-      const s5 = `<div class="report-section">
+      const s5 = `<div class="report-section"><div class="section-scroll">
         <div class="wiki-card">
           <div class="wiki-card-label">Employment rate</div>
           <div class="wiki-card-value">${fmtVal('employment_rate')??'—'}</div>
@@ -787,7 +822,7 @@ export function setupClick(map, getActiveLevel, getAllData, getVarMap, getYear) 
         <div class="hbar-section-title">Occupations</div>
         ${buildHBar('High-skill',  fmtVal('occ_high_skill_pct'),  rawVal('occ_high_skill_pct'),  '#6baed6')}
         ${buildHBar('Elementary',  fmtVal('occ_elementary_pct'),  rawVal('occ_elementary_pct'),  '#e05c5c')}
-      </div>`;
+      </div></div>`;
 
       document.getElementById('detail-body').innerHTML = s1 + s5 + s4 + s2;
       document.getElementById('detail-body').scrollLeft = 0;

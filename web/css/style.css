@@ -565,7 +565,7 @@ body {
   top: 120px;
   right: 16px;
   width: 380px;
-  max-height: calc(100vh - 150px);
+  height: calc(100vh - 150px);
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -711,7 +711,7 @@ body {
 }
 
 .kpi-value {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--text);
   line-height: 1.1;
@@ -768,18 +768,28 @@ body {
 }
 #detail-body::-webkit-scrollbar { display: none; }
 
+/* Each section is a fixed-size horizontal slot */
 .report-section {
   min-width: 100%;
+  width: 100%;
   height: 100%;
+  overflow: hidden;
+  scroll-snap-align: start;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+.report-section-title { display: none; }
+
+/* Inner scroll container — this is what actually scrolls vertically */
+.section-scroll {
+  flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  scroll-snap-align: start;
-  padding: 12px 14px;
-  flex-shrink: 0;
+  padding: 14px 16px 40px 16px;
 }
-.report-section::-webkit-scrollbar { width: 3px; }
-.report-section::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-.report-section-title { display: none; }
+.section-scroll::-webkit-scrollbar { width: 3px; }
+.section-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
 /* ── Stat card ──────────────────────────────────────────────── */
 .wiki-card { margin-bottom: 10px; }
@@ -793,12 +803,47 @@ body {
 }
 
 /* ── Sparkline ──────────────────────────────────────────────── */
-.spark-wrap { margin-top: 3px; position: relative; }
-.spark-trend { position: absolute; top: 0; right: 0; font-size: 9px; font-weight: 700; z-index: 1; }
+.spark-wrap { margin-top: 3px; }
+
+.spark-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1px;
+}
+
+.spark-years-left {
+  font-size: 7px;
+  color: var(--text-muted);
+}
+
+.spark-avg {
+  font-size: 9px;
+  color: #6b7280;
+  flex: 1;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+.spark-trend {
+  font-size: 10px;
+  font-weight: 700;
+  text-align: right;
+}
+
 .trend-up { color: #38b86e; }
 .trend-dn { color: #e05c5c; }
-.spark-years { display: flex; justify-content: space-between; align-items: center; font-size: 7px; color: var(--text-muted); margin-top: 1px; }
-.spark-avg   { font-size: 6px; color: #555e68; }
+
+.spark-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1px;
+}
+
+.spark-year-end {
+  font-size: 7px;
+  color: var(--text-muted);
+}
 
 /* ── Mini stat grid ─────────────────────────────────────────── */
 .mini-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
@@ -812,10 +857,10 @@ body {
 .hbar-section-title:first-child { margin-top: 0; }
 .hbar-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
 .hbar-row:last-child { margin-bottom: 0; }
-.hbar-label { font-size: 9px; color: var(--text-muted); width: 70px; flex-shrink: 0; }
+.hbar-label { font-size: 10px; color: var(--text-muted); width: 72px; flex-shrink: 0; }
 .hbar-track { flex: 1; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
 .hbar-fill  { height: 100%; border-radius: 3px; }
-.hbar-value { font-size: 9px; font-weight: 700; color: var(--text-muted); width: 34px; text-align: right; flex-shrink: 0; }
+.hbar-value { font-size: 10px; font-weight: 700; color: var(--text-muted); width: 36px; text-align: right; flex-shrink: 0; }
 
 /* ── Education ladder ───────────────────────────────────────── */
 .edu-ladder-wrap { margin-bottom: 10px; }
@@ -831,3 +876,16 @@ body {
 .pyramid-legend { display: flex; gap: 12px; margin-bottom: 3px; font-size: 9px; }
 .pyramid-legend-m { color: #6baed6; }
 .pyramid-legend-f { color: #f768a1; }
+
+/* ── Age structure bars ─────────────────────────────────────── */
+.age-structure-wrap { margin-bottom: 10px; }
+.age-structure-title {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;
+}
+.age-band-row { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
+.age-band-row:last-child { margin-bottom: 0; }
+.age-band-label { font-size: 10px; color: var(--text-muted); width: 56px; flex-shrink: 0; }
+.age-band-track { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+.age-band-fill  { height: 100%; border-radius: 4px; }
+.age-band-value { font-size: 11px; font-weight: 700; color: var(--text); width: 38px; text-align: right; flex-shrink: 0; }
