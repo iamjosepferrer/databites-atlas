@@ -1,6 +1,0 @@
-{
-  "rewrites": [
-    { "source": "/catalonia-atlas/(.*)", "destination": "/$1" },
-    { "source": "/catalonia-atlas", "destination": "/index.html" }
-  ]
-}
